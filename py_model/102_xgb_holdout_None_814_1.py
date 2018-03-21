@@ -41,7 +41,7 @@ param = {'max_depth':10,
          'eta':0.01,
          'colsample_bytree':0.5,
          'subsample':0.75,
-         'silent':1, 
+         'silent':1,
          'nthread':28,
          'eval_metric':'logloss',
          'objective':'binary:logistic',
@@ -76,7 +76,7 @@ col = X_train.dtypes[X_train.dtypes=='object'].index.tolist()
 print('drop2',col)
 X_train.drop(col, axis=1, inplace=True)
 
-X_train.fillna(-1, inplace=1)
+X_train.fillna(-1, inplace=True)
 
 #==============================================================================
 # SPLIT!
@@ -88,23 +88,23 @@ train_user = X_train[['user_id']].drop_duplicates()
 
 
 def split_build_valid():
-    
-    train_user['is_valid'] = np.random.choice([0,1], size=len(train_user), 
+
+    train_user['is_valid'] = np.random.choice([0,1], size=len(train_user),
                                               p=[1-valid_size, valid_size])
     valid_n = train_user['is_valid'].sum()
     build_n = (train_user.shape[0] - valid_n)
-    
+
     print('build user:{}, valid user:{}'.format(build_n, valid_n))
     valid_user = train_user[train_user['is_valid']==1].user_id
     is_valid = X_train.user_id.isin(valid_user)
-    
+
     dbuild = xgb.DMatrix(X_train[~is_valid].drop('user_id', axis=1), y_train[~is_valid])
     dvalid = xgb.DMatrix(X_train[is_valid].drop('user_id', axis=1), label=y_train[is_valid])
     watchlist = [(dbuild, 'build'),(dvalid, 'valid')]
-    
+
     label = dbuild.get_label()
     scale_pos_weight = float(np.sum(label == 0)) / np.sum(label==1)
-    
+
     print('scale_pos_weight', scale_pos_weight)
     print('FINAL SHAPE')
     print('dbuild.shape:{}  dvalid.shape:{}\n'.format((dbuild.num_row(), dbuild.num_col()),
@@ -131,11 +131,11 @@ for i in range(LOOP):
                       early_stopping_rounds=ESR, verbose_eval=5)
     models.append(model)
     model.save_model('../output/model/{}/xgb_None_{}.model'.format(DATE, i))
-    
+
     # VALID
     yhat = model.predict(dvalid)
     print('Valid Mean:', np.mean(yhat))
-    
+
     if i != (LOOP-1):
         del dbuild, dvalid, watchlist
         gc.collect()

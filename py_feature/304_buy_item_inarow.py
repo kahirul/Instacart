@@ -32,30 +32,31 @@ def make(T):
         folder = 'test'
     else:
         folder = 'trainT-'+str(T)
-        
+
     label = pd.read_pickle('../feature/{}/label_reordered.p'.format(folder))
     label = pd.merge(label, X_base, on='order_id', how='left') # TODO: change to inner
-    
+
     # ======== T-1~3 ========
     for t in range(1,4):
+        print('../feature/{}/f304-{}_order-product.p'.format(folder, t))
         col = ['order_id', 'product_id', 'buy_item_inarow']
         df = pd.merge(label, log[col].rename(columns={'order_id':'t-{}_order_id'.format(t)}),
                       on=['t-{}_order_id'.format(t),'product_id'], how='left')
-        
+
         col = ['order_id', 'order_number']
         df = pd.merge(df, log[col].rename(columns={'order_id':'t-{}_order_id'.format(t)}).drop_duplicates(),
                       on=['t-{}_order_id'.format(t)], how='left')
-        
+
         df['buy_item_inarow_ratio'] = df['buy_item_inarow']/df['order_number']
         df = df.rename(columns={'buy_item_inarow':'t-{}_buy_item_inarow'.format(t),
                                 'buy_item_inarow_ratio':'t-{}_buy_item_inarow_ratio'.format(t)})
         print(df.isnull().sum())
-        df.fillna(0, inplace=1)
-        df.reset_index(drop=1, inplace=1)
-        
+        df.fillna(0, inplace=True)
+        df.reset_index(drop=1, inplace=True)
+
         col = ['order_id', 'product_id', 't-{}_buy_item_inarow'.format(t),'t-{}_buy_item_inarow_ratio'.format(t)]
         df[col].to_pickle('../feature/{}/f304-{}_order-product.p'.format(folder, t))
-    
+
 #==============================================================================
 # main
 #==============================================================================

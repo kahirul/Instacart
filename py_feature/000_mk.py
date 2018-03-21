@@ -37,8 +37,8 @@ gc.collect()
 #==============================================================================
 # log
 #==============================================================================
-log = pd.concat([pd.read_csv('../input/order_products__prior.csv.gz'), 
-                 pd.read_csv('../input/order_products__train.csv.gz')], 
+log = pd.concat([pd.read_csv('../input/order_products__prior.csv.gz'),
+                 pd.read_csv('../input/order_products__train.csv.gz')],
                 ignore_index=1)
 
 log.sort_values(['order_id', 'add_to_cart_order'], inplace=True)
@@ -56,7 +56,7 @@ gc.collect()
 order_product = log.groupby('order_id').product_name.apply(list).reset_index()
 order_tbl = pd.merge(orders, order_product, on='order_id', how='left')
 
-order_tbl.sort_values(['user_id', 'order_number'],inplace=True)
+order_tbl.sort_values(['user_id', 'order_number'], inplace=True)
 order_tbl.reset_index(drop=1, inplace=True)
 order_tbl = pd.merge(order_tbl, log[['order_id','order_number_rev']].drop_duplicates(), on='order_id', how='left')
 order_tbl.order_number_rev = order_tbl.order_number_rev.fillna(-1).astype(int)
@@ -82,10 +82,10 @@ gc.collect()
 #==============================================================================
 # order_aisle-department
 #==============================================================================
-order_aisle      = pd.crosstab(log['order_id'], 
+order_aisle      = pd.crosstab(log['order_id'],
                                log['aisle_id']).add_prefix('aisle_').reset_index()
 
-order_department = pd.crosstab(log['order_id'], 
+order_department = pd.crosstab(log['order_id'],
                                log['department_id']).add_prefix('department_').reset_index()
 
 order_aisle = pd.merge(order_aisle, order_department, on='order_id', how='left')

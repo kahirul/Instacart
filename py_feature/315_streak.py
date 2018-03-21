@@ -33,24 +33,24 @@ def multi(T):
         folder = 'test'
     else:
         folder = 'trainT-'+str(T)
-        
+
     label = pd.read_pickle('../feature/{}/label_reordered.p'.format(folder))
     label = pd.merge(label, X_base, on='order_id', how='inner')
-    
+
     # ======== T-1~3 ========
     for t in range(1,4):
-        
+
         df = pd.merge(label, streak.rename(columns={'order_id':'t-{}_order_id'.format(t),
                                                     'streak':'t-{}_streak'.format(t)}),
                       on=['t-{}_order_id'.format(t),'product_id'], how='left')
-        
+
         print(df.isnull().sum())
-        df.fillna(-99, inplace=1)
-        df.reset_index(drop=1, inplace=1)
-        
+        df.fillna(-99, inplace=True)
+        df.reset_index(drop=1, inplace=True)
+
         col = ['order_id', 'product_id', 't-{}_streak'.format(t)]
         df[col].to_pickle('../feature/{}/f315-{}_order-product.p'.format(folder, t))
-    
+
 #==============================================================================
 # main
 #==============================================================================

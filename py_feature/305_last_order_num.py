@@ -38,15 +38,15 @@ def make(T):
         folder = 'test'
     else:
         folder = 'trainT-'+str(T)
-        
+
     label = pd.read_pickle('../feature/{}/label_reordered.p'.format(folder))
     label = pd.merge(label, X_base, on='order_id', how='left')
-    
+
     log_ = log[log.order_number_rev>T]
     log_.drop_duplicates(['user_id', 'product_id'], keep='last', inplace=True)
-    log_.drop(['order_id','order_number_rev'], axis=1, inplace=1)
+    log_.drop(['order_id','order_number_rev'], axis=1, inplace=True)
     log_.columns = ['user_id', 'product_id', 'last_order_number']
-    
+
     df = pd.merge(label, log_, on=['user_id', 'product_id'], how='left')
     df['order_number_diff'] = df.order_number - df.last_order_number
 

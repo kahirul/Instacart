@@ -39,7 +39,7 @@ valid_size = 0.05
 nround = 10000
 #nround = 10
 
-param = {'max_depth':10, 
+param = {'max_depth':10,
          'eta':0.02,
          'colsample_bytree':0.4,
          'subsample':0.75,
@@ -79,7 +79,7 @@ col = X_train.dtypes[X_train.dtypes=='object'].index.tolist()+['seq2dec_r0_df2']
 print('drop2',col)
 X_train.drop(col, axis=1, inplace=True)
 
-X_train.fillna(-1, inplace=1)
+X_train.fillna(-1, inplace=True)
 
 #==============================================================================
 # SPLIT!
@@ -88,20 +88,20 @@ print('split by user')
 train_user = X_train[['user_id']].drop_duplicates()
 
 def split_build_valid():
-    
-    train_user['is_valid'] = np.random.choice([0,1], size=len(train_user), 
+
+    train_user['is_valid'] = np.random.choice([0,1], size=len(train_user),
                                               p=[1-valid_size, valid_size])
     valid_n = train_user['is_valid'].sum()
     build_n = (train_user.shape[0] - valid_n)
-    
+
     print('build user:{}, valid user:{}'.format(build_n, valid_n))
     valid_user = train_user[train_user['is_valid']==1].user_id
     is_valid = X_train.user_id.isin(valid_user)
-    
+
     dbuild = xgb.DMatrix(X_train[~is_valid].drop('user_id', axis=1), y_train[~is_valid])
     dvalid = xgb.DMatrix(X_train[is_valid].drop('user_id', axis=1), label=y_train[is_valid])
     watchlist = [(dbuild, 'build'),(dvalid, 'valid')]
-    
+
     print('FINAL SHAPE')
     print('dbuild.shape:{}  dvalid.shape:{}\n'.format((dbuild.num_row(), dbuild.num_col()),
                                                       (dvalid.num_row(), dvalid.num_col())))
@@ -117,10 +117,10 @@ models = []
 for i in range(LOOP):
     print('LOOP',i)
     dbuild, dvalid, watchlist = split_build_valid()
-    
+
     if i==0:
         col_train = dbuild.feature_names
-        
+
     model = xgb.train(param, dbuild, nround, watchlist,
                       early_stopping_rounds=ESR, verbose_eval=5)
     models.append(model)

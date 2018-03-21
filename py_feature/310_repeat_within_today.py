@@ -38,13 +38,13 @@ def make(T):
         folder = 'test'
     else:
         folder = 'trainT-'+str(T)
-        
+
     log_ = log[log.order_number_rev>T]
-    
+
     uid_pid = {}
     uid_bk = pid_bk = onb_bk = None
     col = ['user_id', 'product_id', 'order_number', 'days_since_prior_order']
-    
+
     for uid,pid,onb,days in log_[col].values:
     #    uid = str(uid)
     #    pid = str(pid)
@@ -54,22 +54,22 @@ def make(T):
             continue
         elif days == 0 and uid == uid_bk and pid == pid_bk and onb-onb_bk==1:
             uid_pid[uid+'@'+pid] = 1
-            
+
         uid_bk = uid
         pid_bk = pid
         onb_bk = onb
-    
+
     df = pd.DataFrame().from_dict(uid_pid, orient='index').reset_index()
     df.columns = ['uidpid', 'buy_within_sameday']
     df['user_id'] = df.uidpid.map(lambda x:x.split('@')[0])
     df['product_id'] = df.uidpid.map(lambda x:x.split('@')[1])
-    
+
     df = df[['user_id', 'product_id', 'buy_within_sameday']]
     for c in df.columns:
         df[c] = df[c].map(int)
     df.sort_values(df.columns.tolist(), inplace=True)
-    df.reset_index(drop=1, inplace=1)
-    
+    df.reset_index(drop=1, inplace=True)
+
     df.to_pickle('../feature/{}/f310_user-product.p'.format(folder))
 
 #==============================================================================
